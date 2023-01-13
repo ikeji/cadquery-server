@@ -70,12 +70,15 @@ def run(port: int, module_manager: ModuleManager, ui_options: dict, is_dead: boo
 
     def watchdog() -> None:
         while True:
-            last_updated_file = module_manager.get_last_updated_file()
+            try:
+                last_updated_file = module_manager.get_last_updated_file()
 
-            if last_updated_file:
-                module_manager.module_name = op.basename(last_updated_file)[:-3]
-                data = module_manager.get_data()
-                events_queue.put(SSE_MESSAGE_TEMPLATE % json.dumps(data))
+                if last_updated_file:
+                    module_manager.module_name = op.basename(last_updated_file)[:-3]
+                    data = module_manager.get_data()
+                    events_queue.put(SSE_MESSAGE_TEMPLATE % json.dumps(data))
+            except FileNotFoundError as e:
+                print(e)
             sleep(WATCH_PERIOD)
 
     events_queue = Queue(maxsize = 3)
